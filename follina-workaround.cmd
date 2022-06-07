@@ -4,7 +4,7 @@ setlocal
 
 net session >NUL 2>&1
 
-IF %errorLevel% == 0 (
+if %errorLevel% == 0 (
 	echo File was run as administrator / with elevated permissions. > NUL
 ) else (
 	echo File MUSST be executed with elevated privileges.
@@ -14,14 +14,21 @@ IF %errorLevel% == 0 (
 mkdir %SystemDrive%\FixIt 2> NUL
 
 set LogFile=%SystemDrive%\FixIt\FixIt.log
-set LockFile=%SystemDrive%\FixIt\_20220603_
+set LockFile=%SystemDrive%\FixIt\_20220603_1
 
 if exist %LockFile% goto :END
 
 echo %DATE% %TIME% >> %LogFile%
 
 call :RemoveKey HKCR\ms-msdt %SystemDrive%\FixIt\ms-msdt.reg
-call :RemoveKey HKCR\ms-search %SystemDrive%\FixIt\ms-search.reg
+call :RemoveKey HKCR\search-ms %SystemDrive%\FixIt\search-ms.reg
+
+:: Bugfix wrong registry key deleted
+if exist %SystemDrive%\FixIt\ms-search.reg (
+	echo %SystemRoot%\system32\reg.exe import %SystemDrive%\FixIt\ms-search.reg >> %LogFile%
+	%SystemRoot%\system32\reg.exe import %SystemDrive%\FixIt\ms-search.reg 1>> %LogFile% 2>&1
+	del %SystemDrive%\FixIt\ms-search.reg >> NUL
+)
 
 echo %DATE% %TIME% >> %LogFile%
 echo. >> %LogFile%
